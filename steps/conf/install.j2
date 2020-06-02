@@ -1,0 +1,7 @@
+{%- for varname in basic_pre_replace %}
+ynh_replace_string --match_string="__{{varname|upper}}__" --replace_string="${{varname}}" --target_file="../conf/{{template}}"
+{%- endfor %}
+
+cp "../conf/{{template}}" "{{destination}}"
+chown $app:root "{{destination}}"
+chmod 640 "{{destination}}"

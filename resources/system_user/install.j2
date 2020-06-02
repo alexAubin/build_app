@@ -1,0 +1,2 @@
+{{ name }}={{ username }}
+ynh_system_user_create --username={{ username }} {{ ("--home_dir=" + home) if home else "" }}

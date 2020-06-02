@@ -1,0 +1,6 @@
+[defaults]
+name="$app"
+template="systemd.service"
+integrate_service_in_yunohost=true
+basic_pre_replace = []
+wait_until=""

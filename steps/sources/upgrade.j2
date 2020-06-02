@@ -1,0 +1,23 @@
+{% if keep_during_upgade %}
+# Create a temporary directory
+# and save things to keep before/after upgrading the sources
+tmpdir="$(mktemp -d)"
+{% for stuff in keep_during_upgrade %}
+cp -a "{{install_dir}}/{{stuff}}" "$tmpdir/{{stuff}}"
+{% endfor %}
+{% endif %}
+
+ynh_secure_remove --file="{{install_dir}}"
+ynh_setup_source --dest_dir="{{install_dir}}" --source_id="{{source_id}}"
+
+{% if keep_during_upgade %}
+# Create a temporary directory
+{% for stuff in keep_during_upgrade %}
+cp -a "$tmpdir/{{stuff}}" "{{install_dir}}/{{stuff}}"
+{% endfor %}
+ynh_secure_remove --file="$tmpdir"
+{% endif %}
+
+chown -R $app: "{{install_dir}}"
+chmod -R 640 "{{install_dir}}"
+find "{{install_dir}}" -type d -print0 | xargs -0 chmod 750

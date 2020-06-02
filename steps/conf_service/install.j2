@@ -1,0 +1,11 @@
+{%- for varname in basic_pre_replace %}
+ynh_replace_string --match_string="__{{varname|upper}}__" --replace_string="${{varname}}" --target_file="../conf/{{template}}"
+{%- endfor %}
+
+ynh_add_systemd_config
+
+ynh_systemd_action --service_name={{name}} --action="start" {% if wait_until %}--line_match="{{wait_until}}"{% endif %}
+
+{% if integrate_service_in_yunohost %}
+yunohost service add {{name}}
+{% endif %}

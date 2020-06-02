@@ -1,0 +1,3 @@
+[defaults]
+name="$app"
+basic_pre_replace = []
