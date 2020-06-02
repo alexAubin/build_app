@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#=================================================
+# SOURCE HELPERS
+#=================================================
+
+{% for file in files_to_source -%}
+source {{ file }}
+{% endfor -%}
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+{% for arg in manifest.arguments.install -%}
+{{arg.name}}=$(ynh_app_setting_get "$app" {{arg.name}})
+{% endfor -%}
+{%- for resource in resources if not resource.from_manifest -%}
+{%- for setting in resource.settings -%}
+{{setting}}=$(ynh_app_setting_get "$app" {{setting}})
+{%- endfor -%}
+{%- endfor %}
+{% if globals_ %}
+#=================================================
+# CUSTOM GLOBALS
+#=================================================
+{% for old, new in globals_.legacy_aliases.items() -%}
+{{ old }}=${{new}}
+{% endfor -%}
+{%- endif -%}
+
+{% for step in steps if step.code.backup %}
+#=================================================
+# {{ step.type|upper }}
+#=================================================
+{{ step.code.backup }}
+{% endfor %}

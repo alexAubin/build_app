@@ -1,0 +1,10 @@
+[[resource]]
+type = "directory"
+name = "install_dir"
+directory = "/var/www/$app"
+
+[[resource]]
+name = "url"
+type = "url"
+settings = ["domain", "path"]
+from_manifest = true

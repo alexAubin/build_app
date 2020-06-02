@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#=================================================
+# SOURCE HELPERS
+#=================================================
+
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..."
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "$app" domain)
+path=$(ynh_app_setting_get "$app" path)
+is_public=$(ynh_app_setting_get "$app" is_public)
+install_dir=$(ynh_app_setting_get "$app" install_dir)
+
+#=================================================
+# CUSTOM GLOBALS
+#=================================================
+final_path=$install_dir
+path_url=$path
+#=================================================
+# BOOK RESOURCES
+#=================================================
+ynh_script_progression --message="Booking resources for app..."
+
+
+# --------------------
+# Book install_dir
+# --------------------
+test ! -e $install_dir || ynh_die "Directory $install_dir already exists."
+
+
+
+#=================================================
+# SOURCES
+#=================================================
+ynh_script_progression --message="sources..."
+
+ynh_restore_file --origin_path="$final_path"
+
+chown -R www-data: "$install_dir"
+chmod -R 640 "$install_dir"
+find "$install_dir" -type d -print0 | xargs -0 chmod 750
+
+#=================================================
+# CONF_NGINX
+#=================================================
+ynh_script_progression --message="conf_nginx..."
+
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_systemd_action --service_name=nginx --action=reload

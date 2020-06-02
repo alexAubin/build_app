@@ -18,6 +18,6 @@ cp -a "$tmpdir/{{stuff}}" "{{install_dir}}/{{stuff}}"
 ynh_secure_remove --file="$tmpdir"
 {% endif %}
 
-chown -R $app: "{{install_dir}}"
+chown -R {{user_perm}}: "{{install_dir}}"
 chmod -R 640 "{{install_dir}}"
 find "{{install_dir}}" -type d -print0 | xargs -0 chmod 750

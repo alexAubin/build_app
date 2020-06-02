@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#=================================================
+# SOURCE HELPERS
+#=================================================
+
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "$app" domain)
+path=$(ynh_app_setting_get "$app" path)
+is_public=$(ynh_app_setting_get "$app" is_public)
+install_dir=$(ynh_app_setting_get "$app" install_dir)
+
+#=================================================
+# CUSTOM GLOBALS
+#=================================================
+final_path=$install_dir
+path_url=$path
+
+#=================================================
+# SOURCES
+#=================================================
+ynh_backup --src_path="$install_dir"
+
+#=================================================
+# CONF_NGINX
+#=================================================
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"

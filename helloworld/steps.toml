@@ -1,0 +1,33 @@
+[[step]]
+type = "globals"
+
+    [step.legacy_aliases]
+    # We need these backward compat. with a few existing helpers
+    final_path = "install_dir"
+    path_url = "path"
+
+
+[[step]]
+type = "sources"
+install_dir = "$install_dir"
+user_perm = "www-data"
+
+    [[step.override]]
+    scripts = ["install", "upgrade"]
+    code = '''
+        mkdir -p "{{install_dir}}"
+        echo "Hello world!" > {{install_dir}}/index.html
+    '''
+    after = '''
+        chown -R {{user_perm}}: "{{install_dir}}"
+        chmod -R 640 "{{install_dir}}"
+        find "{{install_dir}}" -type d -print0 | xargs -0 chmod 750
+    '''
+
+
+[[step]]
+type = "conf_nginx"
+
+
+[[step]]
+type = "conf_ssowat"

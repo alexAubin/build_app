@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#=================================================
+# SOURCE HELPERS
+#=================================================
+
+source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..."
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "$app" domain)
+path=$(ynh_app_setting_get "$app" path)
+is_public=$(ynh_app_setting_get "$app" is_public)
+install_dir=$(ynh_app_setting_get "$app" install_dir)
+
+#=================================================
+# CUSTOM GLOBALS
+#=================================================
+final_path=$install_dir
+path_url=$path
+
+#=================================================
+# CONF_NGINX
+#=================================================
+ynh_script_progression --message="conf_nginx..."
+ynh_remove_nginx_config
+
+#=================================================
+# SOURCES
+#=================================================
+ynh_script_progression --message="sources..."
+ynh_secure_remove --file="$install_dir"

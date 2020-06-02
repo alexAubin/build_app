@@ -1,5 +1,5 @@
 ynh_restore_file --origin_path="$final_path"
 
-chown -R $app: "{{install_dir}}"
+chown -R {{user_perm}}: "{{install_dir}}"
 chmod -R 640 "{{install_dir}}"
 find "{{install_dir}}" -type d -print0 | xargs -0 chmod 750

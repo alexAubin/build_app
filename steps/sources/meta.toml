@@ -1,3 +1,4 @@
 [defaults]
 source_id="$app"
+user_perm="$app"
 install_dir="$install_dir"

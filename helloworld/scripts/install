@@ -4,9 +4,6 @@
 # SOURCE HELPERS
 #=================================================
 
-{% for file in files_to_source -%}
-source {{ file }}
-{% endfor -%}
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -25,51 +22,69 @@ ynh_abort_if_errors
 
 app=$YNH_APP_INSTANCE_NAME
 
-{% for arg in manifest.arguments.install -%}
-{{arg.name}}=$YNH_APP_ARG_{{arg.name|upper}}
-{% endfor %}
+domain=$YNH_APP_ARG_DOMAIN
+path=$YNH_APP_ARG_PATH
+is_public=$YNH_APP_ARG_IS_PUBLIC
+
 
 #=================================================
 # BOOK RESOURCES
 #=================================================
 ynh_script_progression --message="Booking resources for app..."
 
-{% for resource in resources %}
-# --------------------
-# Book {{ resource.name }}
-# --------------------
-{{ resource.code.install }}
-{% endfor %}
 
-{% if globals_ %}
+# --------------------
+# Book install_dir
+# --------------------
+install_dir=/var/www/$app
+test ! -e $install_dir || ynh_die "Directory $install_dir already exists."
+
+# --------------------
+# Book url
+# --------------------
+ynh_webpath_register $app $domain $path
+
+
+
 #=================================================
 # CUSTOM GLOBALS / TESTS
 #=================================================
 
-{% for old, new in globals_.legacy_aliases.items() -%}
-{{ old }}=${{new}}
-{% endfor -%}
-{%- endif %}
+final_path=$install_dir
+path_url=$path
+
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
 ynh_script_progression --message="Storing installation settings..."
 
-{% for arg in manifest.arguments.install if arg.name not in ["domain", "path"]%}
-ynh_app_setting_set --app=$app --key={{arg.name}} --value=${{arg.name}}
-{%- endfor -%}
 
-{% for resource in resources if not resource.from_manifest -%}
-{%- for setting in resource.settings %}
-ynh_app_setting_set --app=$app --key={{setting}} --value=${{setting}}
-{%- endfor -%}
-{%- endfor %}
+ynh_app_setting_set --app=$app --key=is_public --value=$is_public
+ynh_app_setting_set --app=$app --key=install_dir --value=$install_dir
 
-{% for step in steps %}
+
 #=================================================
-# {{ step.type|upper }}
+# SOURCES
 #=================================================
-ynh_script_progression --message="{{ step.type }}..."
+ynh_script_progression --message="sources..."
 
-{{ step.code.install }}
-{% endfor %}
+mkdir -p "$install_dir"
+echo "Hello world!" > $install_dir/index.html
+
+chown -R www-data: "$install_dir"
+chmod -R 640 "$install_dir"
+find "$install_dir" -type d -print0 | xargs -0 chmod 750
+
+#=================================================
+# CONF_NGINX
+#=================================================
+ynh_script_progression --message="conf_nginx..."
+
+ynh_add_nginx_config
+
+#=================================================
+# CONF_SSOWAT
+#=================================================
+ynh_script_progression --message="conf_ssowat..."
+
+[ $is_public -eq 0 ] || ynh_permission_update --permission "main" --add "visitors"
